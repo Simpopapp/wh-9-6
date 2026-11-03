@@ -169,17 +169,19 @@ def backup_payloads() -> dict[str, bytes]:
 async def import_backup(page: Page, path: Path) -> None:
     """Importa um backup em /settings substituindo o progresso (caminho do usuário)."""
     await page.goto(f"{BASE}/settings", wait_until="domcontentloaded")
-    # Sinal de hidratação: o cartão de backup (e o input escondido) já reagir a
-    # eventos. Sem isso, o set_input_files pode disparar antes de o React estar
-    # no ar (chunks de dev compilam sob demanda) e o import silenciosamente
-    # não acontece — era a flake que impedia o fluxo do undo no roteiro cheio.
-    importar_btn = page.get_by_role("button", name=re.compile("Importar backup", re.I))
-    await importar_btn.wait_for(state="visible", timeout=20_000)
-    await page.set_input_files('input[type="file"]', path)
-    revisar = page.get_by_text("Revisar importação").first
-    try:
-        await revisar.wait_for(state="visible", timeout=15_000)
-    except Exception:
+    # O HTML chega do SSR e o botão fica visível ANTES da hidratação: um único
+    # set_input_files pode disparar o change num DOM ainda sem listeners
+    # (chunks de dev compilam sob demanda) e o import silenciosamente não
+    # acontece. Tenta de novo até o cartão "Revisar importação" aparecer.
+    card = page.get_by_text("Revisar importação").first
+    for _ in range(8):
+        await page.set_input_files('input[type="file"]', path)
+        try:
+            await card.wait_for(state="visible", timeout=2_500)
+            break
+        except Exception:
+            continue
+    else:
         body = await page.evaluate("() => document.body.innerText")
         expect("import: cartão 'Revisar importação' apareceu", False, body[:400])
         return
