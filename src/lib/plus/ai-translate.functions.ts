@@ -1,7 +1,7 @@
 /**
  * Server functions de tradução IA (PRD projeto 11, §2.2/§8). O módulo entra no
  * grafo do cliente, mas só o corpo dos handlers é retirado do bundle: as
- * importações de servidor (`@/server/gateway`) são dinâmicas, dentro do handler.
+ * importações de servidor (`@/lib/ai/gateway.server`) são dinâmicas, dentro do handler.
  *
  * Projeto 13 (D9): entrada COM TETOS (strings e arrays limitados), rate limit
  * próprio por sessão anônima — o handler é público e CSRF não contém custo.
@@ -64,11 +64,11 @@ export async function handleTranslateWord(input: unknown): Promise<AiWordRespons
   if (!parsed.success) return { ok: false, code: "invalid", message: INVALID_MESSAGE };
   const data = parsed.data;
   try {
-    const { checkRateLimit } = await import("@/server/rate-limit");
+    const { checkRateLimit } = await import("@/lib/ai/rate-limit.server");
     if (!checkRateLimit(data.sessionId, undefined, payloadSize(data)).ok) {
       return { ok: false, code: "rate", message: RATE_MESSAGE };
     }
-    const { callGatewayObject } = await import("@/server/gateway");
+    const { callGatewayObject } = await import("@/lib/ai/gateway.server");
     const prompt = buildWordPrompt(data);
     const result = await callGatewayObject({
       instructions: prompt.instructions,
@@ -88,11 +88,11 @@ export async function handleTranslatePhrase(input: unknown): Promise<AiPhraseRes
   if (!parsed.success) return { ok: false, code: "invalid", message: INVALID_MESSAGE };
   const data = parsed.data;
   try {
-    const { checkRateLimit } = await import("@/server/rate-limit");
+    const { checkRateLimit } = await import("@/lib/ai/rate-limit.server");
     if (!checkRateLimit(data.sessionId, undefined, payloadSize(data)).ok) {
       return { ok: false, code: "rate", message: RATE_MESSAGE };
     }
-    const { callGatewayObject } = await import("@/server/gateway");
+    const { callGatewayObject } = await import("@/lib/ai/gateway.server");
     const prompt = buildPhrasePrompt(data);
     const result = await callGatewayObject({
       instructions: prompt.instructions,

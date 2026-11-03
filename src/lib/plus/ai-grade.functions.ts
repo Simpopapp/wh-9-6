@@ -1,7 +1,7 @@
 /**
  * Server function do grader linguístico IA (projeto 14, D14-1a). O módulo entra
  * no grafo do cliente, mas só o corpo dos handlers é retirado do bundle: as
- * importações de servidor (`@/server/gateway`) são dinâmicas, dentro do handler
+ * importações de servidor (`@/lib/ai/gateway.server`) são dinâmicas, dentro do handler
  * — mesmo padrão de `ai-translate.functions.ts`; nada de IA no bundle do cliente.
  *
  * Contrato com o cliente (D14-1b): falha de IA devolve `ok:false` e o cliente
@@ -62,11 +62,11 @@ export async function handleGradeLanguage(input: unknown): Promise<AiGradeRespon
   if (!parsed.success) return { ok: false, code: "invalid", message: INVALID_MESSAGE };
   const data = parsed.data;
   try {
-    const { checkRateLimit } = await import("@/server/rate-limit");
+    const { checkRateLimit } = await import("@/lib/ai/rate-limit.server");
     if (!checkRateLimit(data.sessionId, undefined, payloadSize(data)).ok) {
       return { ok: false, code: "rate", message: RATE_MESSAGE };
     }
-    const { callGatewayObject } = await import("@/server/gateway");
+    const { callGatewayObject } = await import("@/lib/ai/gateway.server");
     const prompt = buildGradePrompt({
       kind: data.kind as GradeKind,
       taskType: data.taskType,
