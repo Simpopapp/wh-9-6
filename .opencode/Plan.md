@@ -1,4 +1,4 @@
-Protocolo dos 3 arquivos (planejamento → PRD → roadmap)
+[Protocolo dos 3 arquivos (planejamento → PRD → roadmap)
 
 O trabalho agentico de remix é guiado por 3 arquivos (N = 1 neste projeto; com ou sem extensão `.md`, é o mesmo arquivo):
 
@@ -84,3 +84,4 @@ Subagente aqui NÃO é executor de tarefinha. É um **executor completo de um pa
 __________________________________________________
 
 Obs: (PULAR O QUE DEPENDER DO MONITOR - Monitor temporariamente indisponivel, siga direto para a execução do proximo project{n})
+](https://github.com/Simpopapp/wh-9-6.git)
