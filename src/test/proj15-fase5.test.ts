@@ -13,7 +13,7 @@ import {
   RATE_LIMIT_PER_KEY,
   checkRateLimit,
   resetRateLimits,
-} from "@/server/rate-limit";
+} from "@/lib/ai/rate-limit.server";
 
 beforeEach(() => {
   window.localStorage.clear();

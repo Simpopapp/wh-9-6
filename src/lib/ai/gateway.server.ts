@@ -7,7 +7,7 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { NoObjectGeneratedError, Output, streamText, type ModelMessage } from "ai";
 
-import { createLovableAiGatewayRunIdFetch } from "./run-id.ts";
+import { createLovableAiGatewayRunIdFetch } from "./run-id.server.ts";
 
 const GATEWAY_BASE_URL = "https://ai.gateway.lovable.dev/v1";
 const DEFAULT_MODEL = "openai/gpt-6-astra";

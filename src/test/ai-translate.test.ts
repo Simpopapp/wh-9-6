@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { classifyGatewayError } from "@/server/gateway";
+import { classifyGatewayError } from "@/lib/ai/gateway.server";
 
 function withStatus(statusCode: number, message = "erro"): unknown {
   return Object.assign(new Error(message), { statusCode });
