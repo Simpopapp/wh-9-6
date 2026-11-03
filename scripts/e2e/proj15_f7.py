@@ -313,7 +313,11 @@ async def flow_vocab_undo(page: Page, errors: list[str], backup: Path) -> None:
     await page.get_by_role("button", name="Confirmar remoção").first.click()
     await page.wait_for_timeout(600)
     body = await page.evaluate("() => document.body.innerText")
-    expect("vocab: item sai da lista após remoção", "serenity" not in body, body[:400])
+    # O toast de remoção cita a palavra ("serenity" removido do vocabulário),
+    # então o critério correto é a LISTA (nenhum item removível restante),
+    # não o texto inteiro da página.
+    rows = page.get_by_role("button", name="Remover do vocabulário")
+    expect("vocab: item sai da lista após remoção", (await rows.count()) == 0, body[:400])
 
     # D15-4c: toast com Desfazer restaura o item.
     undo = page.get_by_role("button", name=re.compile("Desfazer", re.I)).first
