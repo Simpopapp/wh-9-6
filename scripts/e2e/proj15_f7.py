@@ -168,20 +168,28 @@ def backup_payloads() -> dict[str, bytes]:
 
 async def import_backup(page: Page, path: Path) -> None:
     """Importa um backup em /settings substituindo o progresso (caminho do usuário)."""
-    await page.goto(f"{BASE}/settings", wait_until="domcontentloaded")
-    # O HTML chega do SSR e o botão fica visível ANTES da hidratação: um único
-    # set_input_files pode disparar o change num DOM ainda sem listeners
-    # (chunks de dev compilam sob demanda) e o import silenciosamente não
-    # acontece. Tenta de novo até o cartão "Revisar importação" aparecer.
+    # O HTML vem do SSR: o input existe ANTES da hidratação. Um upload cedo
+    # dispara o change num DOM sem listeners (evento perdido, valor retido) e
+    # os uploads seguintes não re-disparam (arquivos iguais). Esperar a rede
+    # estabilizar + intervalo curto faz o primeiro upload cair pós-hidratação.
+    await page.goto(f"{BASE}/settings", wait_until="networkidle")
+    await page.wait_for_timeout(1500)
     card = page.get_by_text("Revisar importação").first
-    for _ in range(8):
+    ok = False
+    for _ in range(5):
         await page.set_input_files('input[type="file"]', path)
         try:
-            await card.wait_for(state="visible", timeout=2_500)
+            await card.wait_for(state="visible", timeout=4_000)
+            ok = True
             break
         except Exception:
-            continue
-    else:
+            # Última saída: os arquivos já estão no input (evento perdido
+            # pré-hidratação) — re-dispara o change manualmente.
+            await page.evaluate(
+                "() => document.querySelector('input[type=file]')"
+                "?.dispatchEvent(new Event('change', { bubbles: true }))"
+            )
+    if not ok:
         body = await page.evaluate("() => document.body.innerText")
         expect("import: cartão 'Revisar importação' apareceu", False, body[:400])
         return
